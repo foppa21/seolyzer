@@ -15,4 +15,7 @@ __pycache__/
 
 # requirements.txt und config.yaml explizit NICHT ignorieren!
 !requirements.txt
-!config.yaml 
+!config.yaml
+
+# PRD Dokument nicht versionieren
+seo_cli_prd.md 
