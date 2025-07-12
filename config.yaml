@@ -1,0 +1,33 @@
+# SEOlyzer Konfiguration
+
+# HTTP-Einstellungen
+http:
+  user_agent: "SEOlyzer/1.0 (SEO Analysis Tool)"
+  timeout: 30  # Sekunden
+  max_retries: 3
+  retry_delay: 5  # Sekunden
+
+# Proxy-Einstellungen (optional)
+proxy:
+  enabled: false
+  http: ""
+  https: ""
+
+# Crawling-Einstellungen
+crawling:
+  max_depth: 2
+  max_pages: 100
+  respect_robots_txt: true
+  delay_between_requests: 1  # Sekunden
+
+# Performance-Einstellungen
+performance:
+  check_core_web_vitals: true
+  check_mobile_friendly: true
+  check_page_speed: true
+
+# Ausgabe-Einstellungen
+output:
+  default_format: "json"
+  include_timestamp: true
+  pretty_print: true 

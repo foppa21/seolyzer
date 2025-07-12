@@ -1,0 +1,18 @@
+# Virtuelle Umgebung
+venv/
+
+# Python Bytecode
+__pycache__/
+*.pyc
+
+# Reports und generierte Dateien im Root
+/*.csv
+/*.txt
+
+# Sonstiges
+.DS_Store
+.env
+
+# requirements.txt und config.yaml explizit NICHT ignorieren!
+!requirements.txt
+!config.yaml 
