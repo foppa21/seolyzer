@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-SEOlyzer - Ein CLI-Tool zur SEO-Analyse von Webseiten
+SEOlyzer - A CLI tool for SEO analysis of websites
 """
 
 import click
@@ -18,21 +18,21 @@ import aiohttp
 console = Console()
 
 def is_url(string):
-    # Einfache URL-Prüfung
+    # Simple URL check
     return re.match(r'^https?://', string.strip()) is not None
 
 @click.command()
 @click.argument('input_path')
-@click.option('--output', '-o', help='Ausgabedatei für den Bericht (CSV)', required=True)
-@click.option('--format', '-f', type=click.Choice(['csv']), default='csv', help='Nur CSV wird unterstützt')
-@click.option('--depth', '-d', default=1, help='Tiefe der Seitenanalyse')
-@click.option('--pagespeed', is_flag=True, default=False, help='Führe zusätzlich eine Google PageSpeed Insights Analyse durch (API-Key erforderlich)')
-@click.option('--verbose', '-v', is_flag=True, help='Detaillierte Ausgabe')
+@click.option('--output', '-o', help='Output file for the report (CSV)', required=True)
+@click.option('--format', '-f', type=click.Choice(['csv']), default='csv', help='Only CSV is supported')
+@click.option('--depth', '-d', default=1, help='Depth of page analysis')
+@click.option('--pagespeed', is_flag=True, default=False, help='Additionally run Google PageSpeed Insights analysis (API key required)')
+@click.option('--verbose', '-v', is_flag=True, help='Verbose output')
 def main(input_path, output, format, depth, pagespeed, verbose):
     """
-    SEOlyzer - SEO-Analyse-Tool für Webseiten
+    SEOlyzer - SEO analysis tool for websites
     
-    INPUT_PATH: Entweder eine einzelne URL oder ein Pfad zu einer Datei mit URLs (eine pro Zeile)
+    INPUT_PATH: Either a single URL or a path to a file with URLs (one per line)
     """
     asyncio.run(run_analysis(input_path, output, format, depth, pagespeed, verbose))
 
@@ -47,25 +47,25 @@ async def run_analysis(input_path, output, format, depth, pagespeed, verbose):
     elif is_url(input_path):
         urls = [input_path.strip()]
     else:
-        console.print(f"[red]Fehler: '{input_path}' ist weder eine existierende Datei noch eine gültige URL![/red]")
+        console.print(f"[red]Error: '{input_path}' is neither an existing file nor a valid URL![/red]")
         return
 
     if not urls:
-        console.print(f"[red]Keine gültigen URLs gefunden![/red]")
+        console.print(f"[red]No valid URLs found![/red]")
         return
 
-    console.print(f"[yellow]Analysiere folgende URLs:[/yellow]")
+    console.print(f"[yellow]Analyzing the following URLs:[/yellow]")
     for u in urls:
         console.print(f" - {u}")
 
     analyzer = SEOAnalyzer()
     results_list = []
     for url in urls:
-        console.print(f"[bold green]SEOlyzer[/bold green] - SEO-Analyse für {url}")
+        console.print(f"[bold green]SEOlyzer[/bold green] - SEO analysis for {url}")
         result = await analyzer.analyze_url(url, depth)
         result["url"] = url
         result["timestamp"] = datetime.now().isoformat()
-        # PageSpeed Insights nur wenn Option gesetzt
+        # PageSpeed Insights only if option is set
         if pagespeed:
             result["pagespeed"] = await analyze_pagespeed(url)
         results_list.append(result)
@@ -74,21 +74,21 @@ async def run_analysis(input_path, output, format, depth, pagespeed, verbose):
     await analyzer.close()
 
     write_csv(output, results_list, pagespeed)
-    console.print(f"\n[green]CSV-Bericht wurde in {output} gespeichert[/green]")
+    console.print(f"\n[green]CSV report saved to {output}[/green]")
 
 def write_csv(output, results_list, pagespeed):
     fieldnames = [
         'URL',
-        'Title Tag inhalt',
-        'Description Tag inhalt',
-        'H1 Header anzahl',
-        'Inhalt H1 Header',
-        'H2 Header anzahl',
-        'Inhalt H2 Header',
-        'Anzahl Bilder',
-        'Ladezeit',
-        'Größe',
-        'Viewport-Tag',
+        'Title tag content',
+        'Description tag content',
+        'H1 header count',
+        'H1 header content',
+        'H2 header count',
+        'H2 header content',
+        'Image count',
+        'Load time',
+        'Size',
+        'Viewport tag',
         'Canonical',
         'hreflang',
         'Noindex',
@@ -109,16 +109,16 @@ def write_csv(output, results_list, pagespeed):
             pagespeed_result = results.get('pagespeed', {})
             row = {
                 'URL': url,
-                'Title Tag inhalt': meta.get('title', ''),
-                'Description Tag inhalt': meta.get('description', ''),
-                'H1 Header anzahl': headers.get('h1_count', 0),
-                'Inhalt H1 Header': ', '.join(headers.get('h1_content', [])),
-                'H2 Header anzahl': headers.get('h2_count', 0),
-                'Inhalt H2 Header': ', '.join(headers.get('h2_content', [])),
-                'Anzahl Bilder': images.get('count', 0),
-                'Ladezeit': perf.get('load_time_seconds', ''),
-                'Größe': perf.get('size_bytes', ''),
-                'Viewport-Tag': mobile.get('viewport', ''),
+                'Title tag content': meta.get('title', ''),
+                'Description tag content': meta.get('description', ''),
+                'H1 header count': headers.get('h1_count', 0),
+                'H1 header content': ', '.join(headers.get('h1_content', [])),
+                'H2 header count': headers.get('h2_count', 0),
+                'H2 header content': ', '.join(headers.get('h2_content', [])),
+                'Image count': images.get('count', 0),
+                'Load time': perf.get('load_time_seconds', ''),
+                'Size': perf.get('size_bytes', ''),
+                'Viewport tag': mobile.get('viewport', ''),
                 'Canonical': tech.get('canonical', ''),
                 'hreflang': ','.join(tech.get('hreflang', [])),
                 'Noindex': tech.get('noindex', ''),
@@ -131,35 +131,35 @@ def write_csv(output, results_list, pagespeed):
             writer.writerow(row)
 
 def display_results(results):
-    """Zeigt die Analyseergebnisse in einer übersichtlichen Tabelle an"""
-    table = Table(title="SEO-Analyse Ergebnisse")
-    table.add_column("Kategorie", style="cyan")
+    """Displays the analysis results in a clear table"""
+    table = Table(title="SEO Analysis Results")
+    table.add_column("Category", style="cyan")
     table.add_column("Status", style="green")
     table.add_column("Details", style="yellow")
 
-    # Meta-Tags
+    # Meta tags
     meta = results.get("meta_tags", {})
-    table.add_row("Meta-Tags", "✅" if meta else "❌", f"Title: {meta.get('title')}, Desc: {meta.get('description')}")
-    # Header
+    table.add_row("Meta tags", "✅" if meta else "❌", f"Title: {meta.get('title')}, Desc: {meta.get('description')}")
+    # Headers
     headers = results.get("headers", {})
-    table.add_row("H1-Header", str(headers.get('h1_count', 0)), f"{headers.get('h1_content', [])}")
-    table.add_row("H2-Header", str(headers.get('h2_count', 0)), f"{headers.get('h2_content', [])}")
-    table.add_row("H3-Header", str(headers.get('h3_count', 0)), f"{headers.get('h3_content', [])}")
-    # Bilder
+    table.add_row("H1 header", str(headers.get('h1_count', 0)), f"{headers.get('h1_content', [])}")
+    table.add_row("H2 header", str(headers.get('h2_count', 0)), f"{headers.get('h2_content', [])}")
+    table.add_row("H3 header", str(headers.get('h3_count', 0)), f"{headers.get('h3_content', [])}")
+    # Images
     images = results.get("images", {})
-    table.add_row("Bilder", f"{images.get('count', 0)}", f"Beispiele: {[img['src'] for img in images.get('images', [])[:3]]}")
+    table.add_row("Images", f"{images.get('count', 0)}", f"Examples: {[img['src'] for img in images.get('images', [])[:3]]}")
     # Links
     links = results.get("links", {})
-    table.add_row("Links (intern)", f"{links.get('internal_count', 0)}", f"Beispiele: {[l for l in links.get('internal', [])[:3]]}")
-    table.add_row("Links (extern)", f"{links.get('external_count', 0)}", f"Beispiele: {[l for l in links.get('external', [])[:3]]}")
+    table.add_row("Links (internal)", f"{links.get('internal_count', 0)}", f"Examples: {[l for l in links.get('internal', [])[:3]]}")
+    table.add_row("Links (external)", f"{links.get('external_count', 0)}", f"Examples: {[l for l in links.get('external', [])[:3]]}")
     # Performance
     perf = results.get("performance", {})
-    table.add_row("Performance", "✅" if perf.get('status_code') == 200 else "❌", f"Ladezeit: {perf.get('load_time_seconds')}s, Größe: {perf.get('size_bytes')} Bytes")
+    table.add_row("Performance", "✅" if perf.get('status_code') == 200 else "❌", f"Load time: {perf.get('load_time_seconds')}s, Size: {perf.get('size_bytes')} bytes")
     # Mobile
     mobile = results.get("mobile_friendly", {})
-    table.add_row("Mobile Viewport", "✅" if mobile.get('viewport') else "❌", f"Viewport-Tag: {mobile.get('viewport')}")
-    table.add_row("Mobile Meta", "✅" if mobile.get('mobile_meta') else "❌", f"Mobile-Meta: {mobile.get('mobile_meta')}")
-    # Technisches SEO
+    table.add_row("Mobile viewport", "✅" if mobile.get('viewport') else "❌", f"Viewport tag: {mobile.get('viewport')}")
+    table.add_row("Mobile meta", "✅" if mobile.get('mobile_meta') else "❌", f"Mobile meta: {mobile.get('mobile_meta')}")
+    # Technical SEO
     tech = results.get("technical_seo", {})
     table.add_row("Canonical", "✅" if tech.get('canonical') else "❌", f"{tech.get('canonical')}")
     table.add_row("Noindex", "✅" if tech.get('noindex') else "❌", f"noindex: {tech.get('noindex')}")
@@ -170,12 +170,12 @@ def display_results(results):
 async def analyze_pagespeed(url):
     api_key = os.environ.get('GOOGLE_PAGESPEED_API_KEY')
     if not api_key:
-        return {'error': 'Kein API-Key gesetzt'}
+        return {'error': 'No API key set'}
     endpoint = 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed'
     params = {
         'url': url,
         'key': api_key,
-        'strategy': 'desktop',  # oder 'mobile'
+        'strategy': 'desktop',  # or 'mobile'
     }
     async with aiohttp.ClientSession() as session:
         try:

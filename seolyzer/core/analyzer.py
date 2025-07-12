@@ -1,5 +1,5 @@
 """
-Hauptmodul für die SEO-Analyse
+Main module for SEO analysis
 """
 
 import aiohttp
@@ -17,23 +17,23 @@ class SEOAnalyzer:
         self.session = None
     
     def _load_config(self, config_path: str) -> Dict[str, Any]:
-        """Lädt die Konfiguration aus der YAML-Datei"""
+        """Loads the configuration from the YAML file"""
         if not os.path.exists(config_path):
-            raise FileNotFoundError(f"Konfigurationsdatei {config_path} nicht gefunden")
+            raise FileNotFoundError(f"Configuration file {config_path} not found")
         
         with open(config_path, 'r', encoding='utf-8') as f:
             return yaml.safe_load(f)
     
     async def analyze_url(self, url: str, depth: int = 1) -> Dict[str, Any]:
         """
-        Führt die SEO-Analyse für eine URL durch
+        Performs SEO analysis for a URL
         
         Args:
-            url: Die zu analysierende URL
-            depth: Die Tiefe der Analyse
+            url: The URL to analyze
+            depth: The depth of the analysis
             
         Returns:
-            Dict mit den Analyseergebnissen
+            Dict with the analysis results
         """
         if not self.session:
             self.session = aiohttp.ClientSession(
@@ -52,7 +52,7 @@ class SEOAnalyzer:
             return {"error": str(e)}
     
     async def _analyze_page(self, html: str, url: str) -> Dict[str, Any]:
-        """Analysiert eine einzelne Seite"""
+        """Analyzes a single page"""
         soup = BeautifulSoup(html, 'html.parser')
         
         return {
@@ -66,7 +66,7 @@ class SEOAnalyzer:
         }
     
     def _analyze_meta_tags(self, soup: BeautifulSoup) -> Dict[str, Any]:
-        """Analysiert Meta-Tags (Title, Description)"""
+        """Analyzes meta tags (title, description)"""
         result = {}
         # Title
         title_tag = soup.find('title')
@@ -77,12 +77,12 @@ class SEOAnalyzer:
         return result
     
     def _analyze_headers(self, soup: BeautifulSoup) -> Dict[str, Any]:
-        """Analysiert Header-Tags (H1-H6) und gibt Anzahl und Inhalte für H1, H2, H3 zurück"""
+        """Analyzes header tags (H1-H6) and returns count and content for H1, H2, H3"""
         headers = {}
         for i in range(1, 7):
             tag = f'h{i}'
             headers[tag] = [h.get_text(strip=True) for h in soup.find_all(tag)]
-        # Speziell für H1, H2, H3: Anzahl und Inhalte
+        # Specifically for H1, H2, H3: count and content
         summary = {
             'h1_count': len(headers['h1']),
             'h2_count': len(headers['h2']),
@@ -95,7 +95,7 @@ class SEOAnalyzer:
         return summary
     
     def _analyze_images(self, soup: BeautifulSoup) -> Dict[str, Any]:
-        """Analysiert Bilder und Alt-Texte"""
+        """Analyzes images and alt texts"""
         images = []
         for img in soup.find_all('img'):
             src = img.get('src', '')
@@ -104,7 +104,7 @@ class SEOAnalyzer:
         return {'count': len(images), 'images': images}
     
     def _analyze_links(self, soup: BeautifulSoup) -> Dict[str, Any]:
-        """Analysiert interne und externe Links"""
+        """Analyzes internal and external links"""
         links = {'internal': [], 'external': []}
         for a in soup.find_all('a', href=True):
             href = a['href']
@@ -116,7 +116,7 @@ class SEOAnalyzer:
         return {'internal_count': len(links['internal']), 'external_count': len(links['external']), 'internal': links['internal'], 'external': links['external']}
     
     def _get_domain(self, soup: BeautifulSoup) -> str:
-        # Hilfsfunktion, um die Domain aus dem Soup-Objekt zu extrahieren (z.B. aus Canonical-Link oder Base-Tag)
+        # Helper function to extract the domain from the soup object (e.g. from canonical link or base tag)
         canonical = soup.find('link', rel='canonical')
         if canonical and canonical.has_attr('href'):
             return urlparse(canonical['href']).netloc
@@ -126,7 +126,7 @@ class SEOAnalyzer:
         return ''
     
     async def _analyze_performance(self, url: str) -> Dict[str, Any]:
-        """Analysiert Performance-Metriken (Ladezeit, Seitengröße)"""
+        """Analyzes performance metrics (load time, page size)"""
         result = {}
         start = time.perf_counter()
         try:
@@ -143,17 +143,17 @@ class SEOAnalyzer:
         return result
     
     async def _check_mobile_friendly(self, url: str) -> Dict[str, Any]:
-        """Überprüft Mobile-First Kriterien (Viewport, mobile Meta-Tags)"""
+        """Checks mobile-first criteria (viewport, mobile meta tags)"""
         result = {'viewport': False, 'mobile_meta': False}
         try:
             async with self.session.get(url) as response:
                 html = await response.text()
             from bs4 import BeautifulSoup
             soup = BeautifulSoup(html, 'html.parser')
-            # Viewport-Tag
+            # Viewport tag
             viewport = soup.find('meta', attrs={'name': 'viewport'})
             result['viewport'] = viewport is not None
-            # Mobile-optimierte Meta-Tags
+            # Mobile-optimized meta tags
             mobile_meta = soup.find('meta', attrs={'name': 'HandheldFriendly'}) or \
                           soup.find('meta', attrs={'name': 'MobileOptimized'})
             result['mobile_meta'] = mobile_meta is not None
@@ -162,7 +162,7 @@ class SEOAnalyzer:
         return result
     
     def _analyze_technical_seo(self, soup: BeautifulSoup) -> Dict[str, Any]:
-        """Führt technische SEO-Prüfungen durch (robots, canonical, noindex, hreflang)"""
+        """Performs technical SEO checks (robots, canonical, noindex, hreflang)"""
         result = {}
         # Canonical
         canonical = soup.find('link', rel='canonical')
@@ -176,6 +176,6 @@ class SEOAnalyzer:
         return result
     
     async def close(self):
-        """Schließt die HTTP-Session"""
+        """Closes the HTTP session"""
         if self.session:
             await self.session.close() 
